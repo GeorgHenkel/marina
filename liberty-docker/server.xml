@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <server description="Java EE 8 Server">
-
     <featureManager>
         <feature>javaee-8.0</feature>
     </featureManager>
 
-    <httpEndpoint id="defaultHttpEndpoint"
-		              host="*"
-                  httpPort="9080"
-                  httpsPort="9443" />
+    <httpEndpoint id="defaultHttpEndpoint" host="*" httpPort="9080" httpsPort="9443" />
+
+    <library id="DerbyLib">
+        <fileset dir="/opt/lib/jdbc/derby" includes="derby.jar" />
+    </library>
+	
+	<dataSource id="jupagooDS" jndiName="jdbc/jupagooDS">
+        <jdbcDriver libraryRef="DerbyLib"/>
+		<properties.derby.embedded databaseName="jupagooDB" createDatabase="create"/>
+    </dataSource>
 
     <applicationManager autoExpand="true" />
 
-    <keyStore id="defaultKeyStore"
-              password="Liberty" />
-
+    <keyStore id="defaultKeyStore" password="Liberty" />
 </server>

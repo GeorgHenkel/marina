@@ -1,5 +1,5 @@
 FROM openjdk:8u151-jre-alpine3.7
-MAINTAINER Georg Henkel <info@georg-henkel.de> (@Georg_Henkel)
+LABEL maintainer="Georg Henkel, <info@georg-henkel.de> (@Georg_Henkel)" description="OpenLiberty Java EE 8 and DerbyDB"
 
 RUN apk update \
   && apk add ca-certificates \
@@ -12,19 +12,28 @@ RUN wget https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/wasdev/d
     && mkdir -p /opt/ibm \
     && unzip -q /tmp/wlp-beta.zip -d /opt/ibm \
     && rm /tmp/wlp-beta.zip
+	
 ENV PATH=/opt/ibm/wlp/bin:$PATH
 
 # Set Path Shortcuts
 ENV LOG_DIR=/logs
-ENV WLP_OUTPUT_DIR=/opt/ibm/wlp/output
 ENV SERVER_NAME=javaee8
+ENV APPLICATION_DIR /opt/ibm/wlp/usr/servers/${SERVER_NAME}
+ENV DEPLOYMENT_DIR ${APPLICATION_DIR}/dropins
+
 RUN mkdir /logs \
     && server create ${SERVER_NAME} \
-    && ln -s $WLP_OUTPUT_DIR/${SERVER_NAME} /output \
-    && ln -s /opt/ibm/wlp/usr/servers/${SERVER_NAME} /config \
-    && rm -rf $WLP_OUTPUT_DIR/.classCache /output/workarea
+    && ln -s /opt/ibm/wlp/output/${SERVER_NAME} /output \
+    && ln -s ${APPLICATION_DIR} /config \
+    && rm -rf /opt/ibm/wlp/output/.classCache /output/workarea
 
-COPY server.xml /opt/ibm/wlp/usr/servers/${SERVER_NAME}/
+COPY server.xml ${APPLICATION_DIR}/
+
+RUN mkdir -p /opt/lib/jdbc/derby \
+    && mkdir -p /opt/databases
+	
+COPY derby/derby.jar /opt/lib/jdbc/derby/
+
 EXPOSE 9080 9443
 
 CMD server run $SERVER_NAME
